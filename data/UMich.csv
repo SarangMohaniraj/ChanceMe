@@ -1,4 +1,4 @@
-Type,Result,WL,Defer,Attend,GPA,"Highest Comb SAT 1600",ACT,Year
+Type,Result,WL,Defer,Attend,GPA,SAT,ACT,Year
 EA,Denied,,,No,3.905,1310,-,2019
 RD,Denied,Yes,,No,4.497,-,36,2019
 EA,Denied,,,No,4.032,-,32,2019
@@ -114,7 +114,6 @@ RD,Incomplete,,,No,3.711,1510,-,2019
 RD,Waitlisted,Yes,,No,4.344,1530,-,2019
 RD,Incomplete,,,Unknown,3.911,1450,-,2019
 RD,Denied,,,Unknown,3.51,1350,29,2019
-RD,Guar. Transfer,,,No,3.824,1360,-,2019
 RD,Incomplete,,,No,2.981,1330,32,2019
 RD,Waitlisted,Yes,,No,4.157,1580,-,2019
 RD,Incomplete,,,No,3.449,1540,-,2019
@@ -256,7 +255,6 @@ RD,Incomplete,,,No,4.417,1540,-,2018
 RD,Denied,,,No,4.09,1280,32,2018
 RD,Denied,,,No,3.392,1320,-,2018
 RD,Incomplete,,,No,3.501,1310,22,2018
-RD,Guar. Transfer,,,No,3.885,1320,22,2018
 RD,Waitlisted,Yes,,No,4.227,1540,34,2018
 RD,Withdrawn,,,No,4.306,1550,-,2018
 RD,Incomplete,,,No,4.465,1530,-,2018

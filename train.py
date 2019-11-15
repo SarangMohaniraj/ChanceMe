@@ -1,58 +1,113 @@
-import csv
 import numpy as np
+import pandas as pd
+from preprocessing import features,targets,features_test,targets_test,college
 from matplotlib import pyplot as plt
 
-features = None
-dataset = None
-
-with open("data/UMich.csv") as file:
-	data = list(csv.reader(file))
-	features = data[0]
-	dataset = data[1:]
-
-	# remove data with no sat or act score
-	dataset = [i for i in filter(lambda item: item[features.index("Highest Comb SAT 1600")] != "-" or item[features.index("ACT")] != "-", dataset)]
-	file.close()
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+def sigmoid_prime(x):
+    return sigmoid(x) * (1-sigmoid(x))
+def error_formula(y, output):
+    return - y*np.log(output) - (1 - y) * np.log(1-output)
 
 
-gpa = []
-acts = []
+# Write the error term formula
+def error_term_formula(x, y, output):
+    return (y-output)*sigmoid_prime(x)
 
-with open("concordance.csv") as file:
-	concordance = list(csv.reader(file))
-	for element in dataset:
-		sat = element[features.index("Highest Comb SAT 1600")]
-		act = element[features.index("ACT")]
+epochs = 1000
+learnrate = 0.5
 
-		# convert SAT to ACT and choose the higher score
-		concordance_sat = int(concordance[int((1600-int(sat))/10)][1]) if sat != "-" else None
-		act = concordance_sat if act == "-" or (concordance_sat != None and act != "-" and concordance_sat > int(act)) else int(act)
-		element[features.index("ACT")] = act/36 #normalize act
+# Training function
+def train_nn(features, targets, epochs, learnrate):
+    
+    # Use to same seed to make debugging easier
+    np.random.seed(42)
 
-		####### IF CONVERTING TO NUMPY FLOAT32 THEN DELETE THIS ######START HERE########
-		#convert GPA and year to number, normalize gpa
-		element[features.index("GPA")] = float(element[features.index("GPA")])/5 #normalize GPA
-		element[features.index("Year")] = int(element[features.index("Year")])
-		####### IF CONVERTING TO NUMPY FLOAT32 THEN DELETE THIS ######END HERE########
+    n_records, n_features = features.shape
+    last_loss = None
 
-		##this is only to show the distribition, so once you are good you can delete all instances of these lists
-		gpa.append(element[features.index("GPA")])
-		acts.append(element[features.index("ACT")])
+    # Initialize weights
+    weights = np.random.normal(scale=1 / n_features**.5, size=n_features)
 
-		#delete SAT column because all scores have been converted to ACT
-		del(element[features.index("Highest Comb SAT 1600")])
+    for e in range(epochs):
+        del_w = np.zeros(weights.shape)
+        for x, y in zip(features.values, targets):
+            # Loop through all records, x is the input, y is the target
 
-	features.remove("Highest Comb SAT 1600")
-	file.close()
+            # Activation of the output unit
+            #   Notice we multiply the inputs and the weights here 
+            #   rather than storing h as a separate variable 
+            output = sigmoid(np.dot(x, weights))
 
-plt.figure(figsize=(12,4))
-plt.subplot(1,3,1)
-plt.hist(gpa)
-plt.subplot(1,3,2)
-plt.hist(acts)
-plt.subplot(1,3,3)
-plt.scatter([i * 5 for i in gpa],[i * 36 for i in acts],marker='X')
+            # The error, the target minus the network output
+            error = error_formula(y, output)
+
+            # The error term
+            error_term = error_term_formula(x, y, output)
+
+            # The gradient descent step, the error times the gradient times the inputs
+            del_w += error_term * x
+
+        # Update the weights here. The learning rate times the 
+        # change in weights, divided by the number of records to average
+        weights += learnrate * del_w / n_records
+
+        # Printing out the mean square error on the training set
+        if e % (epochs / 10) == 0:
+            out = sigmoid(np.dot(features, weights))
+            loss = np.mean((out - targets) ** 2)
+            print("Epoch:", e)
+            if last_loss and last_loss < loss:
+                print("Train loss: ", loss, "  WARNING - Loss Increasing")
+            else:
+                print("Train loss: ", loss)
+            last_loss = loss
+            print("=========")
+    print("Finished training!")
+    return weights
+
+# w = []
+# a = []
+# for i in range(10):
+#   print(i)
+#   weights = train_nn(features, targets, epochs, learnrate)
+#   w.append(weights)
+#   test_out = sigmoid(np.dot(features_test, weights))
+#   predictions = test_out > 0.5
+#   accuracy = np.mean(predictions == targets_test)
+#   a.append(accuracy)
+#   print("=========")
+# # weights = w[a.index(max(a))])
+
+# Calculate accuracy on test data
+weights = train_nn(features, targets, epochs, learnrate)
+
+test_out = sigmoid(np.dot(features_test, weights))
+predictions = test_out > 0.5
+accuracy = np.mean(predictions == targets_test)
+print("Prediction accuracy: {:.3f}".format(accuracy))
+
+test_out = sigmoid(np.dot([4/5,34/36,2019/2016,0,1], weights))
+predictions = test_out > 0.5
+print(predictions)
+
+print(weights)
+
+accepted,rejected = [],[]
+for gpa in np.arange(0,5,.1):
+  for act in np.arange(0,36,1):
+    test_out = sigmoid(np.dot([gpa/5,act/36,np.random.randint(2016,2019)/2016,0,1], weights))
+    predictions = test_out > 0.5
+    if(predictions):
+      accepted.append([act,gpa])
+    else:
+      rejected.append([act,gpa])
+
+plt.scatter([p[0] for p in accepted],[p[1] for p in accepted], s = 25, marker="s",c="green")
+plt.scatter([p[0] for p in rejected],[p[1] for p in rejected], s = 25, marker="s",c="red")
+plt.title(college + " Predictions")
+plt.xlabel("ACT")
+plt.ylabel("GPA")
 plt.show()
-
-
 
