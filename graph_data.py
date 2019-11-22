@@ -13,4 +13,5 @@ plt.scatter([p[0][0] for p in admitted], [p[0][1] for p in admitted], s = 25, ma
 plt.title(college + " Scattergram")
 plt.xlabel("ACT")
 plt.ylabel("GPA")
+plt.gca().set(xlim=(0, 37), ylim=(0, 5))
 plt.show()
